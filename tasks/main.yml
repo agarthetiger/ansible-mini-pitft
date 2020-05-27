@@ -1,0 +1,66 @@
+---
+- name: ensure latest pip3 setuptools
+  pip:
+    name: setuptools
+    executable: pip3
+    state: latest
+
+- name: ensure required packages for I2C are present
+  apt:
+    name: python-smbus, i2c-tools
+    state: present
+  become: yes
+
+- name: ensure i2c is enabled in device tree config
+  lineinfile:
+    path: /boot/config.txt
+    regexp: 'dtparam=i2c_arm='
+    line: dtparam=i2c_arm=on
+  become: yes
+  notify:
+  - reboot pi
+
+- name: ensure I2C module is enabled
+  lineinfile:
+    path: /etc/modules
+    regexp: 'i2c-dev'
+    line: i2c-dev
+  become: yes
+  notify:
+  - reboot pi
+
+- name: ensure SPI is enabled in device tree config
+  lineinfile:
+    path: /boot/config.txt
+    regexp: 'dtparam=spi='
+    line: dtparam=spi=on
+  become: yes
+  notify:
+  - reboot pi
+      
+- name: flush handlers
+  meta: flush_handlers  
+
+- name: test I2C
+  command: /usr/sbin/i2cdetect -y 1
+  changed_when: no
+
+- name: test SPI
+  stat: 
+    path: "{{ item }}"
+  loop:
+    - /dev/spidev0.0
+    - /dev/spidev0.1
+  changed_when: no
+
+- name: ensure pip3 tft packages are present
+  pip:
+    name: RPI.GPIO, adafruit-blinka, adafruit-circuitpython-rgb-display, spidev
+    executable: pip3
+    state: latest
+
+- name: ensure apt packages for tft are present
+  apt:
+    name: ttf-dejavu, python3-pil, python3-numpy
+    state: present
+  become: yes
