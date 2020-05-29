@@ -31,7 +31,7 @@ As there are no variables for this role running this role is about as easy as it
 ```yaml
     - hosts: servers
       roles:
-         - 
+         - agarthetiger.ansible-mini-pitft
 ```
 
 ## License
